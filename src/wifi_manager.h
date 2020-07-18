@@ -32,6 +32,7 @@ Contains the freeRTOS task and all necessary support
 #ifndef WIFI_MANAGER_H_INCLUDED
 #define WIFI_MANAGER_H_INCLUDED
 
+#include <stdbool.h>
 
 
 #ifdef __cplusplus
@@ -61,12 +62,25 @@ extern "C" {
 #define MAX_AP_NUM 							15
 
 
-
 /**
- * @brief Defines when a connection is lost/attempt to connect is made, how many retries should be made before giving up.
+ * @brief Defines the maximum number of failed retries allowed before the WiFi manager starts its own access point.
  * Setting it to 2 for instance means there will be 3 attempts in total (original request + 2 retries)
  */
-#define	WIFI_MANAGER_MAX_RETRY				CONFIG_WIFI_MANAGER_MAX_RETRY
+#define WIFI_MANAGER_MAX_RETRY_START_AP		CONFIG_WIFI_MANAGER_MAX_RETRY_START_AP
+
+/**
+ * @brief Time (in ms) between each retry attempt
+ * Defines the time to wait before an attempt to re-connect to a saved wifi is made after connection is lost or another unsuccesful attempt is made.
+ */
+#define WIFI_MANAGER_RETRY_TIMER			CONFIG_WIFI_MANAGER_RETRY_TIMER
+
+
+/**
+ * @brief Time (in ms) to wait before shutting down the AP
+ * Defines the time (in ms) to wait after a succesful connection before shutting down the access point.
+ */
+#define WIFI_MANAGER_SHUTDOWN_AP_TIMER		CONFIG_WIFI_MANAGER_SHUTDOWN_AP_TIMER
+
 
 /** @brief Defines the task priority of the wifi_manager.
  *
@@ -185,21 +199,20 @@ extern "C" {
  */
 typedef enum message_code_t {
 	NONE = 0,
-	ORDER_START_HTTP_SERVER = 1,
-	ORDER_STOP_HTTP_SERVER = 2,
-	ORDER_START_DNS_SERVICE = 3,
-	ORDER_STOP_DNS_SERVICE = 4,
-	ORDER_START_WIFI_SCAN = 5,
-	ORDER_LOAD_AND_RESTORE_STA = 6,
-	ORDER_CONNECT_STA = 7,
-	ORDER_DISCONNECT_STA = 8,
-	ORDER_START_AP = 9,
-	ORDER_START_HTTP = 10,
-	ORDER_START_DNS_HIJACK = 11,
-	EVENT_STA_DISCONNECTED = 12,
-	EVENT_SCAN_DONE = 13,
-	EVENT_STA_GOT_IP = 14,
-	MESSAGE_CODE_COUNT = 15 /* important for the callback array */
+	WM_ORDER_START_HTTP_SERVER = 1,
+	WM_ORDER_STOP_HTTP_SERVER = 2,
+	WM_ORDER_START_DNS_SERVICE = 3,
+	WM_ORDER_STOP_DNS_SERVICE = 4,
+	WM_ORDER_START_WIFI_SCAN = 5,
+	WM_ORDER_LOAD_AND_RESTORE_STA = 6,
+	WM_ORDER_CONNECT_STA = 7,
+	WM_ORDER_DISCONNECT_STA = 8,
+	WM_ORDER_START_AP = 9,
+	WM_EVENT_STA_DISCONNECTED = 10,
+	WM_EVENT_SCAN_DONE = 11,
+	WM_EVENT_STA_GOT_IP = 12,
+	WM_ORDER_STOP_AP = 13,
+	WM_MESSAGE_CODE_COUNT = 14 /* important for the callback array */
 
 }message_code_t;
 
@@ -235,7 +248,7 @@ struct wifi_settings_t{
 	bool sta_only;
 	wifi_ps_type_t sta_power_save;
 	bool sta_static_ip;
-	tcpip_adapter_ip_info_t sta_static_ip_config;
+	esp_netif_ip_info_t sta_static_ip_config;
 };
 extern struct wifi_settings_t wifi_settings;
 
@@ -248,6 +261,16 @@ typedef struct{
 	void *param;
 } queue_message;
 
+
+/**
+ * @brief returns the current esp_netif object for the STAtion
+ */
+esp_netif_t* wifi_manager_get_esp_netif_sta();
+
+/**
+ * @brief returns the current esp_netif object for the Access Point
+ */
+esp_netif_t* wifi_manager_get_esp_netif_ap();
 
 
 /**
@@ -290,12 +313,6 @@ esp_err_t wifi_manager_save_sta_config();
 bool wifi_manager_fetch_wifi_sta_config();
 
 wifi_config_t* wifi_manager_get_wifi_sta_config();
-
-
-/**
- * @brief A standard wifi event handler as recommended by Espressif
- */
-esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event);
 
 
 /**
