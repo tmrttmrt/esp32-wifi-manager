@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-@file http_server.h
+@file http_app.h
 @author Tony Pottier
 @brief Defines all functions necessary for the HTTP server to run.
 
@@ -31,8 +31,11 @@ function to process requests, decode URLs, serve files, etc. etc.
 @see https://github.com/tonyp7/esp32-wifi-manager
 */
 
-#ifndef HTTP_SERVER_H_INCLUDED
-#define HTTP_SERVER_H_INCLUDED
+#ifndef HTTP_APP_H_INCLUDED
+#define HTTP_APP_H_INCLUDED
+
+#include <stdbool.h>
+#include <esp_http_server.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,8 +43,13 @@ extern "C" {
 
 
 /* @brief spawns the http server */
-void http_server_start();
+void http_app_start(bool lru_purge_enable);
 
+/* @brief stops the http server */
+void http_app_stop();
+
+/* @brief sets a hook into the wifi manager URI handlers */
+esp_err_t http_server_set_handler_hook( httpd_method_t method,  esp_err_t (*handler)(httpd_req_t *r)  );
 
 
 #ifdef __cplusplus
