@@ -169,7 +169,7 @@ void dns_server(void *pvParameters) {
             	ESP_LOGE(TAG, "UDP sendto failed: %d", err);
             }
         }
-
+        vTaskDelay( 1000 / portTICK_PERIOD_MS );
         taskYIELD(); /* allows the freeRTOS scheduler to take over if needed. DNS daemon should not be taxing on the system */
 
     }

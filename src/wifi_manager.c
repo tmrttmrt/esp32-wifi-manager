@@ -467,6 +467,7 @@ esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event)
     case SYSTEM_EVENT_AP_START:
     	ESP_LOGI(TAG, "SYSTEM_EVENT_AP_START");
     	xEventGroupSetBits(wifi_manager_event_group, WIFI_MANAGER_AP_STARTED_BIT);
+        wifi_manager_send_message(WM_EVENT_AP_START, (void*)NULL );
 		break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -1022,7 +1023,11 @@ void wifi_manager( void * pvParameters ){
 				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
 
 				break;
-
+            case WM_EVENT_AP_START:
+                ESP_LOGI(TAG, "MESSAGE: WM_EVENT_AP_START");
+                /* callback */
+				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+                break;
 			default:
 				break;
 
