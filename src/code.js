@@ -43,7 +43,7 @@ function startCheckStatusInterval() {
 }
 
 function startRefreshAPInterval() {
-  refreshAPInterval = setInterval(refreshAP, 2800);
+  refreshAPInterval = setInterval(refreshAP, 3800);
 }
 
 docReady(async function () {
@@ -100,7 +100,7 @@ docReady(async function () {
   gel("manual_join").addEventListener(
     "click",
     (e) => {
-      performConnect(e.data("connect"));
+      performConnect("manual");
     },
     false
   );
@@ -167,7 +167,7 @@ docReady(async function () {
     document.getElementById("diag-disconnect").style.display = "none";
     gel("connect-details-wrap").classList.remove("blur");
 
-    await fetch("/connect.json", {
+    await fetch("connect.json", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -215,7 +215,7 @@ async function performConnect(conntype) {
   connect_manual_div.style.display = "none";
   connect_wait_div.style.display = "block";
 
-  await fetch("/connect.json", {
+  await fetch("connect.json", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -242,7 +242,7 @@ function rssiToIcon(rssi) {
   }
 }
 
-async function refreshAP(url = "/ap.json") {
+async function refreshAP(url = "ap.json") {
   try {
     var res = await fetch(url);
     var access_points = await res.json();
@@ -272,7 +272,7 @@ function refreshAPHTML(data) {
   gel("wifi-list").innerHTML = h;
 }
 
-async function checkStatus(url = "/status.json") {
+async function checkStatus(url = "status.json") {
   try {
     var response = await fetch(url);
     var data = await response.json();
@@ -343,7 +343,7 @@ async function checkStatus(url = "/status.json") {
     } else if (data.hasOwnProperty("urc") && data["urc"] === 2) {
       console.log("Manual disconnect requested...");
       if (gel("wifi-status").style.display == "block") {
-        gel("wifi-status").style.display == "none";
+        gel("wifi-status").style.display = "none";
       }
     }
   } catch (e) {
