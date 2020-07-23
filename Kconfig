@@ -12,6 +12,12 @@ config WIFI_MANAGER_MAX_RETRY
     help
 	Defines when a connection is lost/attempt to connect is made, how many retries should be made before giving up.
 
+config WEBAPP_LOCATION
+    string "Defines the URL where the wifi manager is located"
+    default "/"
+    help
+    This parameter helps you relocate the wifimanager to another URL, for instance /wifimanager/ The trailing slash is important and should be included
+
 config DEFAULT_AP_SSID
     string "Access Point SSID"
     default "esp32"
