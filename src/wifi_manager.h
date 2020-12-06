@@ -32,7 +32,6 @@ Contains the freeRTOS task and all necessary support
 #ifndef WIFI_MANAGER_H_INCLUDED
 #define WIFI_MANAGER_H_INCLUDED
 
-#include <stdbool.h>
 
 
 #ifdef __cplusplus
@@ -62,25 +61,12 @@ extern "C" {
 #define MAX_AP_NUM 							15
 
 
+
 /**
- * @brief Defines the maximum number of failed retries allowed before the WiFi manager starts its own access point.
+ * @brief Defines when a connection is lost/attempt to connect is made, how many retries should be made before giving up.
  * Setting it to 2 for instance means there will be 3 attempts in total (original request + 2 retries)
  */
-#define WIFI_MANAGER_MAX_RETRY_START_AP		CONFIG_WIFI_MANAGER_MAX_RETRY_START_AP
-
-/**
- * @brief Time (in ms) between each retry attempt
- * Defines the time to wait before an attempt to re-connect to a saved wifi is made after connection is lost or another unsuccesful attempt is made.
- */
-#define WIFI_MANAGER_RETRY_TIMER			CONFIG_WIFI_MANAGER_RETRY_TIMER
-
-
-/**
- * @brief Time (in ms) to wait before shutting down the AP
- * Defines the time (in ms) to wait after a succesful connection before shutting down the access point.
- */
-#define WIFI_MANAGER_SHUTDOWN_AP_TIMER		CONFIG_WIFI_MANAGER_SHUTDOWN_AP_TIMER
-
+#define	WIFI_MANAGER_MAX_RETRY				CONFIG_WIFI_MANAGER_MAX_RETRY
 
 /** @brief Defines the task priority of the wifi_manager.
  *
@@ -248,7 +234,7 @@ struct wifi_settings_t{
 	bool sta_only;
 	wifi_ps_type_t sta_power_save;
 	bool sta_static_ip;
-	esp_netif_ip_info_t sta_static_ip_config;
+	tcpip_adapter_ip_info_t sta_static_ip_config;
 };
 extern struct wifi_settings_t wifi_settings;
 
@@ -261,16 +247,6 @@ typedef struct{
 	void *param;
 } queue_message;
 
-
-/**
- * @brief returns the current esp_netif object for the STAtion
- */
-esp_netif_t* wifi_manager_get_esp_netif_sta();
-
-/**
- * @brief returns the current esp_netif object for the Access Point
- */
-esp_netif_t* wifi_manager_get_esp_netif_ap();
 
 
 /**
@@ -313,6 +289,12 @@ esp_err_t wifi_manager_save_sta_config();
 bool wifi_manager_fetch_wifi_sta_config();
 
 wifi_config_t* wifi_manager_get_wifi_sta_config();
+
+
+/**
+ * @brief A standard wifi event handler as recommended by Espressif
+ */
+esp_err_t wifi_manager_event_handler(void *ctx, system_event_t *event);
 
 
 /**
